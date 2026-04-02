@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broadway Touring Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root {
+  --ink:       #141414;
+  --ink2:      #3a3a3a;
+  --ink3:      #6b6b6b;
+  --rule:      #d8d4ce;
+  --rule2:     #ece9e4;
+  --bg:        #faf9f7;
+  --bg2:       #f3f1ee;
+  --bg3:       #edeae6;
+  --amber:     #B8620A;
+  --amber-lt:  #fdf0e3;
+  --amber-md:  #f4c07a;
+  --teal:      #0A6B5E;
+  --teal-lt:   #e2f2f0;
+  --rose:      #B0303A;
+  --rose-lt:   #fde8e9;
+  --cobalt:    #1A4E8A;
+  --cobalt-lt: #e4ecf8;
+  --serif:    'Libre Baskerville', Georgia, serif;
+  --sans:     'IBM Plex Sans', system-ui, sans-serif;
+  --mono:     'IBM Plex Mono', monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:13px;
+  min-height:100vh;
+}
+
+/* ── MASTHEAD ── */
+.masthead{
+  background:var(--ink);color:#fff;
+  padding:0 32px;
+  display:flex;align-items:stretch;
+  border-bottom:3px solid var(--amber);
+  position:sticky;top:0;z-index:50;
+  box-shadow:0 2px 12px rgba(0,0,0,0.18);
+}
+.masthead-brand{
+  display:flex;align-items:center;gap:16px;
+  padding:14px 0;
+  border-right:1px solid rgba(255,255,255,0.12);
+  padding-right:24px;
+  margin-right:24px;
+}
+.brand-icon{
+  width:36px;height:36px;
+  background:var(--amber);
+  border-radius:2px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--serif);font-size:1.1rem;font-weight:700;color:#fff;
+  flex-shrink:0;
+}
+.brand-text h1{
+  font-family:var(--serif);font-size:1.1rem;font-weight:700;
+  color:#fff;letter-spacing:-0.01em;line-height:1.1;
+}
+.brand-text .sub{
+  font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:rgba(255,255,255,0.45);margin-top:3px;
+}
+.masthead-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:0.62rem;color:rgba(255,255,255,0.45);letter-spacing:0.05em;
+}
+.masthead-status .dot{
+  width:6px;height:6px;border-radius:50%;background:#5dbf8a;flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(93,191,138,0.2);
+}
+.masthead-status strong{color:rgba(255,255,255,0.8);}
+.masthead-actions{margin-left:auto;display:flex;align-items:center;gap:8px;}
+
+.btn{
+  font-family:var(--sans);font-size:0.62rem;font-weight:600;
+  letter-spacing:0.08em;text-transform:uppercase;
+  padding:8px 14px;border-radius:2px;cursor:pointer;
+  transition:all .15s;white-space:nowrap;border:none;
+}
+.btn-primary{background:var(--amber);color:#fff;}
+.btn-primary:hover{background:#a35508;}
+.btn-outline{background:transparent;color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.2);}
+.btn-outline:hover{border-color:rgba(255,255,255,0.5);color:#fff;}
+.btn-ghost{background:transparent;color:var(--ink3);border:1px solid var(--rule);font-family:var(--sans);}
+.btn-ghost:hover{border-color:var(--amber);color:var(--amber);}
+.btn-danger{background:transparent;color:var(--rose);border:1px solid rgba(176,48,58,0.25);font-family:var(--sans);font-size:0.62rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;padding:8px 14px;border-radius:2px;cursor:pointer;transition:all .15s;}
+.btn-danger:hover{background:var(--rose-lt);}
+#fileInput{display:none;}
+
+/* ── SECTION RULE ── */
+.section-rule{
+  display:flex;align-items:center;
+  padding:0 32px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--rule);
+  border-top:1px solid var(--rule);
+}
+.section-rule-label{
+  font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;
+  color:var(--ink3);padding:8px 16px 8px 0;
+  border-right:1px solid var(--rule);margin-right:16px;white-space:nowrap;
+}
+
+/* ── KPI BAR ── */
+.kpi-strip{
+  display:grid;grid-template-columns:repeat(6,1fr);
+  border-bottom:1px solid var(--rule);
+  background:#fff;
+}
+.kpi-cell{
+  padding:18px 22px;
+  border-right:1px solid var(--rule);
+  position:relative;
+}
+.kpi-cell:last-child{border-right:none;}
+.kpi-cell::after{
+  content:'';position:absolute;bottom:0;left:22px;right:22px;
+  height:2px;background:transparent;transition:background .2s;
+}
+.kpi-cell:hover::after{background:var(--amber);}
+.kpi-label{
+  font-size:0.58rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--ink3);margin-bottom:6px;font-weight:500;
+}
+.kpi-value{
+  font-family:var(--serif);font-size:1.55rem;font-weight:700;
+  color:var(--ink);line-height:1;letter-spacing:-0.02em;
+}
+.kpi-sub{font-size:0.58rem;color:var(--ink3);margin-top:4px;}
+
+/* ── LAYOUT ── */
+.workspace{display:flex;min-height:calc(100vh - 108px);}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;flex-shrink:0;
+  background:#fff;
+  border-right:1px solid var(--rule);
+  display:flex;flex-direction:column;
+  overflow-y:auto;
+}
+.sidebar-section{
+  padding:16px;
+  border-bottom:1px solid var(--rule2);
+}
+.sidebar-section:last-child{border-bottom:none;}
+.sidebar-label{
+  display:block;
+  font-size:0.56rem;letter-spacing:0.16em;text-transform:uppercase;
+  color:var(--amber);font-weight:600;
+  margin-bottom:9px;
+}
+select{
+  width:100%;
+  background:var(--bg);border:1px solid var(--rule);
+  color:var(--ink);font-family:var(--sans);font-size:0.72rem;
+  padding:6px 10px;border-radius:2px;outline:none;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b6b6b'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  padding-right:26px;
+  cursor:pointer;
+}
+select:focus{border-color:var(--amber);outline:none;}
+
+.pill-row{display:flex;gap:5px;flex-wrap:wrap;}
+.pill{
+  font-family:var(--sans);font-size:0.58rem;font-weight:600;
+  letter-spacing:0.06em;text-transform:uppercase;
+  padding:5px 10px;border-radius:20px;cursor:pointer;
+  transition:all .15s;
+  border:1px solid var(--rule);
+  background:var(--bg);color:var(--ink3);
+}
+.pill.active{
+  border-color:var(--amber);
+  color:var(--amber);background:var(--amber-lt);
+}
+.pill:hover:not(.active){border-color:var(--ink3);color:var(--ink2);}
+
+.range-row{display:flex;gap:6px;align-items:center;}
+.range-row input[type=number]{
+  flex:1;background:var(--bg);border:1px solid var(--rule);
+  color:var(--ink);font-family:var(--mono);font-size:0.65rem;
+  padding:5px 7px;border-radius:2px;outline:none;min-width:0;
+}
+.range-row input[type=number]:focus{border-color:var(--amber);}
+.range-sep{color:var(--ink3);font-size:0.7rem;}
+
+.show-search-input{
+  width:100%;background:var(--bg);border:1px solid var(--rule);
+  color:var(--ink);font-family:var(--sans);font-size:0.72rem;
+  padding:6px 10px;border-radius:2px;outline:none;
+  margin-bottom:6px;
+}
+.show-search-input:focus{border-color:var(--amber);}
+.show-search-input::placeholder{color:var(--ink3);}
+
+.show-quick{display:flex;gap:5px;margin-bottom:6px;}
+.show-quick button{
+  flex:1;font-family:var(--sans);font-size:0.56rem;font-weight:600;
+  letter-spacing:0.06em;text-transform:uppercase;
+  padding:4px 0;border-radius:2px;cursor:pointer;
+  background:var(--bg);border:1px solid var(--rule);color:var(--ink3);
+  transition:all .15s;
+}
+.show-quick button:hover{border-color:var(--amber);color:var(--amber);}
+
+.show-list{
+  max-height:180px;overflow-y:auto;
+  border:1px solid var(--rule);border-radius:2px;
+  background:var(--bg);padding:4px;
+}
+.show-list label{
+  display:flex;align-items:center;gap:7px;
+  font-size:0.63rem;padding:3px 5px;
+  cursor:pointer;color:var(--ink2);border-radius:2px;
+  transition:background .1s;line-height:1.3;
+}
+.show-list label:hover{background:var(--amber-lt);}
+.show-list label.hidden{display:none;}
+.show-list input[type=checkbox]{accent-color:var(--amber);flex-shrink:0;}
+.show-count{font-size:0.57rem;color:var(--ink3);margin-top:5px;text-align:right;}
+
+/* ── MAIN ── */
+.main-pane{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0;}
+
+/* ── NAV TABS ── */
+.nav-tabs{
+  display:flex;
+  background:#fff;
+  border-bottom:1px solid var(--rule);
+  padding:0 28px;
+  flex-shrink:0;
+}
+.nav-tab{
+  font-family:var(--sans);font-size:0.62rem;font-weight:600;
+  letter-spacing:0.1em;text-transform:uppercase;
+  padding:13px 18px;cursor:pointer;
+  color:var(--ink3);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .2s;
+}
+.nav-tab:hover{color:var(--ink2);}
+.nav-tab.active{color:var(--amber);border-bottom-color:var(--amber);}
+
+/* ── PANELS ── */
+.panel{display:none;padding:24px 28px;overflow-y:auto;flex:1;}
+.panel.active{display:block;}
+
+/* ── TABLE ── */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--rule);border-radius:3px;background:#fff;}
+table{width:100%;border-collapse:collapse;font-size:0.68rem;}
+thead tr{background:var(--bg2);border-bottom:2px solid var(--rule);}
+thead th{
+  text-align:left;padding:10px 13px;
+  font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--ink3);font-weight:600;font-family:var(--sans);
+  white-space:nowrap;cursor:pointer;user-select:none;
+  border-right:1px solid var(--rule2);
+}
+thead th:last-child{border-right:none;}
+thead th:hover{color:var(--amber);}
+thead th.sorted{color:var(--amber);}
+tbody tr{border-bottom:1px solid var(--rule2);transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#fffbf5;}
+tbody td{padding:9px 13px;color:var(--ink2);white-space:nowrap;border-right:1px solid var(--rule2);}
+tbody td:last-child{border-right:none;}
+
+.badge{
+  font-size:0.5rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  padding:2px 7px;border-radius:20px;
+}
+.badge-primary{background:var(--amber-lt);color:var(--amber);border:1px solid #f4c07a;}
+.badge-secondary{background:var(--bg2);color:var(--ink3);border:1px solid var(--rule);}
+
+.cap-cell{display:flex;align-items:center;gap:8px;}
+.cap-bar{width:48px;height:4px;background:var(--rule);border-radius:4px;flex-shrink:0;overflow:hidden;}
+.cap-fill{height:100%;border-radius:4px;transition:width .3s;}
+.fill-hi{background:var(--teal);}
+.fill-mid{background:var(--amber);}
+.fill-lo{background:var(--rose);}
+.sub-y{color:var(--teal);font-weight:700;}
+.sub-n{color:var(--rule);}
+.no-data{text-align:center;padding:48px;color:var(--ink3);font-size:0.72rem;}
+
+/* ── CHARTS ── */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.chart-card{
+  background:#fff;border:1px solid var(--rule);
+  border-radius:3px;padding:20px;
+}
+.chart-card.full{grid-column:1/-1;}
+.chart-hd{
+  font-size:0.58rem;font-weight:700;letter-spacing:0.12em;
+  text-transform:uppercase;color:var(--ink3);
+  margin-bottom:4px;
+}
+.chart-sub{font-size:0.6rem;color:var(--ink3);margin-bottom:14px;}
+
+/* ── RANKINGS ── */
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.rank-card{background:#fff;border:1px solid var(--rule);border-radius:3px;padding:20px;}
+.rank-card.full{grid-column:1/-1;}
+.rank-hd{
+  font-family:var(--serif);font-size:0.9rem;color:var(--ink);
+  margin-bottom:4px;
+}
+.rank-sub{
+  font-size:0.58rem;color:var(--ink3);
+  margin-bottom:14px;padding-bottom:12px;
+  border-bottom:1px solid var(--rule2);
+}
+.rank-item{
+  display:flex;align-items:center;gap:12px;
+  padding:9px 0;border-bottom:1px solid var(--rule2);
+}
+.rank-item:last-child{border-bottom:none;}
+.rank-n{
+  font-family:var(--serif);font-size:0.95rem;
+  color:var(--rule);width:22px;text-align:right;flex-shrink:0;
+}
+.rank-n.top{color:var(--amber);}
+.rank-body{flex:1;min-width:0;}
+.rank-name{font-size:0.7rem;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.rank-detail{font-size:0.58rem;color:var(--ink3);margin-top:2px;}
+.rank-bar-track{width:100%;height:3px;background:var(--rule2);border-radius:2px;margin-top:5px;}
+.rank-bar-fill{height:100%;border-radius:2px;background:var(--amber);}
+.rank-val{
+  font-family:var(--serif);font-size:0.9rem;
+  color:var(--ink);flex-shrink:0;
+}
+
+/* ── MODAL ── */
+.modal-overlay{
+  display:none;position:fixed;inset:0;
+  background:rgba(20,20,20,0.55);backdrop-filter:blur(3px);
+  z-index:200;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{
+  background:#fff;border:1px solid var(--rule);
+  border-radius:4px;padding:30px;
+  width:460px;max-width:92vw;
+  box-shadow:0 16px 48px rgba(0,0,0,0.18);
+}
+.modal-title{
+  font-family:var(--serif);font-size:1.2rem;
+  color:var(--ink);margin-bottom:6px;
+}
+.modal-desc{
+  font-size:0.68rem;color:var(--ink3);
+  line-height:1.65;margin-bottom:20px;
+}
+.drop-zone{
+  border:2px dashed var(--rule);border-radius:3px;
+  padding:32px;text-align:center;cursor:pointer;
+  transition:all .2s;margin-bottom:16px;
+  background:var(--bg);
+}
+.drop-zone:hover,.drop-zone.drag-over{
+  border-color:var(--amber);background:var(--amber-lt);
+}
+.drop-zone-icon{font-size:2rem;margin-bottom:8px;}
+.drop-zone-text{font-size:0.68rem;color:var(--ink3);}
+.drop-zone-text strong{color:var(--ink);}
+.import-log{
+  background:var(--bg2);border:1px solid var(--rule);
+  border-radius:2px;padding:10px;
+  font-family:var(--mono);font-size:0.62rem;
+  color:var(--ink3);max-height:100px;overflow-y:auto;
+  margin-bottom:16px;display:none;line-height:1.8;
+}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;}
+
+/* ── DIVIDER HEADER ── */
+.section-divider{
+  display:flex;align-items:center;gap:12px;
+  margin-bottom:16px;
+}
+.section-divider h2{
+  font-family:var(--serif);font-size:0.85rem;
+  color:var(--ink);white-space:nowrap;
+}
+.section-divider-line{flex:1;height:1px;background:var(--rule2);}
+.section-divider-meta{font-size:0.58rem;color:var(--ink3);}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--rule);border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:var(--ink3);}
+
+/* ── THEATRE SIZE MINI GRID ── */
+.size-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:12px;}
+.size-cell{text-align:center;padding:10px 6px;background:var(--bg);border:1px solid var(--rule2);border-radius:3px;}
+.size-lbl{font-size:0.55rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:4px;}
+.size-val{font-family:var(--serif);font-size:1.1rem;color:var(--amber);}
+.size-sub{font-size:0.55rem;color:var(--ink3);margin-top:2px;}
+
+/* ── INLINE ALERT ── */
+.alert{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 14px;border-radius:3px;margin-bottom:16px;
+  font-size:0.68rem;
+}
+.alert-info{background:var(--cobalt-lt);border:1px solid #b5c9e8;color:var(--cobalt);}
+</style>
+</head>
+<body>
+
+<!-- IMPORT MODAL — commented out pending Power Automate / SharePoint List wiring
+<div class="modal-overlay" id="importModal">
+  <div class="modal">
+    <div class="modal-title">Import Weekly Report</div>
+    <p class="modal-desc">Upload a Touring Report Excel file (.xlsx). New data merges with existing records. Duplicate week/show/city combinations are automatically skipped.</p>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-zone-icon">📂</div>
+      <div class="drop-zone-text"><strong>Click to browse</strong> or drag &amp; drop<br>Accepts .xlsx files</div>
+    </div>
+    <input type="file" id="fileInput" accept=".xlsx">
+    <div class="import-log" id="importLog"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeImport()">Close</button>
+    </div>
+  </div>
+</div>
+-->
+
+<!-- MASTHEAD -->
+<header class="masthead">
+  <div class="masthead-brand">
+    <div class="brand-icon">B</div>
+    <div class="brand-text">
+      <h1>Broadway Touring</h1>
+      <div class="sub">Sales Intelligence</div>
+    </div>
+  </div>
+  <div class="masthead-status">
+    <div class="dot"></div>
+    <span id="dataStatus"><strong>–</strong> records · <strong>–</strong> weeks · v3</span>
+  </div>
+  <div class="masthead-actions">
+    <button class="btn btn-outline" onclick="clearAllData()">↺ Reset</button>
+    <!-- Import button — commented out pending Power Automate / SharePoint List wiring
+    <button class="btn btn-primary" onclick="openImport()">+ Import Week</button>
+    -->
+  </div>
+</header>
+
+<!-- KPI STRIP -->
+<div class="kpi-strip">
+  <div class="kpi-cell">
+    <div class="kpi-label">Engagements</div>
+    <div class="kpi-value" id="kCount">—</div>
+    <div class="kpi-sub">with gross data</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Total Gross</div>
+    <div class="kpi-value" id="kGross">—</div>
+    <div class="kpi-sub">filtered selection</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Avg % Cap Paid</div>
+    <div class="kpi-value" id="kCap">—</div>
+    <div class="kpi-sub">paid seats / total capacity</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Avg GG% Potential</div>
+    <div class="kpi-value" id="kGgPct">—</div>
+    <div class="kpi-sub">gross vs potential</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Avg Paid Admission</div>
+    <div class="kpi-value" id="kAdm">—</div>
+    <div class="kpi-sub">per ticket sold</div>
+  </div>
+  <div class="kpi-cell">
+    <div class="kpi-label">Sub / Non-Sub Gross</div>
+    <div class="kpi-value" id="kSub">—</div>
+    <div class="kpi-sub">avg gross comparison</div>
+  </div>
+</div>
+
+<!-- WORKSPACE -->
+<div class="workspace">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Report Week</span>
+      <select id="fDate"><option value="">All Weeks</option></select>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Tier</span>
+      <div class="pill-row">
+        <button class="pill active" data-tier="" onclick="setTier(this,'')">All</button>
+        <button class="pill" data-tier="Primary" onclick="setTier(this,'Primary')">Primary</button>
+        <button class="pill" data-tier="Secondary" onclick="setTier(this,'Secondary')">Secondary</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Subscription</span>
+      <div class="pill-row">
+        <button class="pill active" data-sub="" onclick="setSub(this,'')">All</button>
+        <button class="pill" data-sub="1" onclick="setSub(this,'1')">Sub</button>
+        <button class="pill" data-sub="0" onclick="setSub(this,'0')">Non-Sub</button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Gross Gross ($)</span>
+      <div class="range-row">
+        <input type="number" id="fGrossMin" placeholder="Min" step="100000" oninput="applyFilters()">
+        <span class="range-sep">–</span>
+        <input type="number" id="fGrossMax" placeholder="Max" step="100000" oninput="applyFilters()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">% Capacity Paid</span>
+      <div class="range-row">
+        <input type="number" id="fCapMin" placeholder="Min %" min="0" max="100" oninput="applyFilters()">
+        <span class="range-sep">–</span>
+        <input type="number" id="fCapMax" placeholder="Max %" min="0" max="100" oninput="applyFilters()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label"># Performances</span>
+      <div class="range-row">
+        <input type="number" id="fPerfMin" placeholder="Min" min="1" oninput="applyFilters()">
+        <span class="range-sep">–</span>
+        <input type="number" id="fPerfMax" placeholder="Max" min="1" oninput="applyFilters()">
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <span class="sidebar-label">Shows</span>
+      <input class="show-search-input" id="showSearch" type="text" placeholder="Search shows…" oninput="filterShowList()">
+      <div class="show-quick">
+        <button onclick="selectAllShows()">All</button>
+        <button onclick="clearAllShows()">None</button>
+        <button onclick="soloSearchedShows()">Only</button>
+      </div>
+      <div class="show-list" id="showList"></div>
+      <div class="show-count" id="showCount"></div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="btn btn-ghost" style="width:100%;font-family:var(--sans);" onclick="resetFilters()">↺ Reset All Filters</button>
+    </div>
+
+  </aside>
+
+  <!-- MAIN PANE -->
+  <div class="main-pane">
+
+    <nav class="nav-tabs">
+      <div class="nav-tab active" onclick="showTab('table')">Data Table</div>
+      <div class="nav-tab" onclick="showTab('charts')">Charts</div>
+      <div class="nav-tab" onclick="showTab('rankings')">Rankings</div>
+    </nav>
+
+    <!-- TABLE PANEL -->
+    <div class="panel active" id="tab-table">
+      <div class="section-divider">
+        <h2>Engagement Data</h2>
+        <div class="section-divider-line"></div>
+        <div class="section-divider-meta" id="tableCount"></div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr>
+            <th onclick="sortBy('report_date')">Week <span id="s-report_date"></span></th>
+            <th onclick="sortBy('tier')">Tier <span id="s-tier"></span></th>
+            <th onclick="sortBy('show')">Show <span id="s-show"></span></th>
+            <th onclick="sortBy('city')">City <span id="s-city"></span></th>
+            <th onclick="sortBy('num_performances')"># Perf <span id="s-num_performances"></span></th>
+            <th onclick="sortBy('gross_gross')">Gross <span id="s-gross_gross">↓</span></th>
+            <th onclick="sortBy('gross_potential')">Potential <span id="s-gross_potential"></span></th>
+            <th onclick="sortBy('gg_pct_gp')">GG%GP <span id="s-gg_pct_gp"></span></th>
+            <th onclick="sortBy('pct_capacity_paid')">% Cap Paid <span id="s-pct_capacity_paid"></span></th>
+            <th onclick="sortBy('total_capacity')">Total Cap <span id="s-total_capacity"></span></th>
+            <th onclick="sortBy('paid_tickets')">Paid Tix <span id="s-paid_tickets"></span></th>
+            <th onclick="sortBy('avg_paid_admission')">Avg Adm <span id="s-avg_paid_admission"></span></th>
+            <th onclick="sortBy('top_paid_price')">Top Price <span id="s-top_paid_price"></span></th>
+            <th onclick="sortBy('on_subscription')">Sub <span id="s-on_subscription"></span></th>
+          </tr></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CHARTS PANEL -->
+    <div class="panel" id="tab-charts">
+      <div class="section-divider">
+        <h2>Performance Charts</h2>
+        <div class="section-divider-line"></div>
+        <div class="section-divider-meta">Based on filtered data</div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-card">
+          <div class="chart-hd">Top 12 Shows</div>
+          <div class="chart-sub">Total gross — all filtered weeks</div>
+          <canvas id="cShowGross" height="280"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hd">Avg GG% of Potential</div>
+          <div class="chart-sub">By show — color indicates over/under potential</div>
+          <canvas id="cGgPct" height="280"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hd">Weekly Gross Trend</div>
+          <div class="chart-sub">Total gross by report week</div>
+          <canvas id="cWeekly" height="200"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-hd">Subscription vs Non-Subscription</div>
+          <div class="chart-sub">Average gross and capacity comparison</div>
+          <canvas id="cSubComp" height="200"></canvas>
+        </div>
+        <div class="chart-card full">
+          <div class="chart-hd">% Capacity Paid by Market</div>
+          <div class="chart-sub">Top 20 markets — green ≥ 90%, amber 60–89%, red &lt; 60%</div>
+          <canvas id="cMarketCap" height="180"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- RANKINGS PANEL -->
+    <div class="panel" id="tab-rankings">
+      <div class="section-divider">
+        <h2>Rankings &amp; Intelligence</h2>
+        <div class="section-divider-line"></div>
+        <div class="section-divider-meta">Filtered data</div>
+      </div>
+      <div class="rank-grid">
+        <div class="rank-card">
+          <div class="rank-hd">Top Grossing Shows</div>
+          <div class="rank-sub">Cumulative gross across all filtered weeks</div>
+          <div id="rShowGross"></div>
+        </div>
+        <div class="rank-card">
+          <div class="rank-hd">Week-over-Week Change</div>
+          <div class="rank-sub">Shows with highest and lowest gross movement</div>
+          <div id="rShowWow"></div>
+        </div>
+        <div class="rank-card">
+          <div class="rank-hd">Top Markets by Total Gross</div>
+          <div class="rank-sub">Cumulative gross revenue by city</div>
+          <div id="rMarketGross"></div>
+        </div>
+        <div class="rank-card">
+          <div class="rank-hd">Markets by Avg Capacity</div>
+          <div class="rank-sub">Average % capacity paid across engagements</div>
+          <div id="rMarketCap"></div>
+        </div>
+        <div class="rank-card full">
+          <div class="rank-hd">Capacity Utilization by Theatre Size</div>
+          <div class="rank-sub">Seat capacity brackets — average % paid and gross</div>
+          <div class="size-grid" id="rTheatreSize"></div>
+          <canvas id="cTheatreSize" height="140"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+// When the Power Automate HTTP endpoint is ready, IT sets this URL and removes
+// the null. The dashboard will fetch live data automatically. No other changes
+// needed. Leave as null to use embedded seed data.
+const DATA_ENDPOINT = null;
+// Example when ready:
+// const DATA_ENDPOINT = 'https://prod-xx.eastus.logic.azure.com/workflows/xxx/triggers/manual/paths/invoke?api-version=2016-06-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=xxx';
+
+// ── SEED DATA ──────────────────────────────────────────────────────────────────
+const SEED = [
+  {report_date:"2025-10-12",tier:"Primary",show:"& Juliet",theatre:"San Jose Center For The Perf. Arts",city:"San Jose",ticket_range:"$45.00-$115.00",top_paid_price:125,num_performances:8,gross_gross:1324024,gross_potential:1783320,gg_pct_gp:74.2,paid_tickets:16430,total_tickets:16534,total_capacity:20632,pct_capacity_paid:79.6,pct_capacity_total:80.1,on_subscription:1,avg_paid_admission:80.08},
+  {report_date:"2025-10-12",tier:"Primary",show:"A Beautiful Noise, The Neil Diamond Musical",theatre:"Orpheum Theatre - Memphis",city:"Memphis",ticket_range:"$10.00-$126.00",top_paid_price:136,num_performances:8,gross_gross:892851,gross_potential:1505688,gg_pct_gp:59.3,paid_tickets:11913,total_tickets:12215,total_capacity:18944,pct_capacity_paid:62.9,pct_capacity_total:64.5,on_subscription:1,avg_paid_admission:73.09},
+  {report_date:"2025-10-12",tier:"Primary",show:"Beauty and the Beast - 30th Anniversary",theatre:"Fisher Theatre",city:"Detroit",ticket_range:"$21.00-$139.00",top_paid_price:199,num_performances:8,gross_gross:1315097,gross_potential:1386216,gg_pct_gp:94.9,paid_tickets:16202,total_tickets:16211,total_capacity:16464,pct_capacity_paid:98.4,pct_capacity_total:98.5,on_subscription:1,avg_paid_admission:81.12},
+  {report_date:"2025-10-12",tier:"Primary",show:"Hamilton (Angelica)",theatre:"Opera House",city:"Boston",ticket_range:"$8.00-$194.00",top_paid_price:294,num_performances:8,gross_gross:2388258,gross_potential:2437520,gg_pct_gp:98,paid_tickets:18735,total_tickets:19134,total_capacity:20720,pct_capacity_paid:90.4,pct_capacity_total:92.4,on_subscription:0,avg_paid_admission:124.82},
+  {report_date:"2025-10-12",tier:"Primary",show:"Harry Potter and the Cursed Child 2024",theatre:"Ohio Theatre",city:"Columbus",ticket_range:"$45.00-$155.00",top_paid_price:225,num_performances:2,gross_gross:528819,gross_potential:578740,gg_pct_gp:91.4,paid_tickets:4974,total_tickets:4982,total_capacity:5514,pct_capacity_paid:90.2,pct_capacity_total:90.4,on_subscription:1,avg_paid_admission:106.15},
+  {report_date:"2025-10-12",tier:"Primary",show:"Hell's Kitchen",theatre:"KeyBank State Theatre",city:"Cleveland",ticket_range:"$25.00-$105.00",top_paid_price:105,num_performances:4,gross_gross:590555,gross_potential:883280,gg_pct_gp:66.9,paid_tickets:8015,total_tickets:8534,total_capacity:11632,pct_capacity_paid:68.9,pct_capacity_total:73.4,on_subscription:1,avg_paid_admission:69.2},
+  {report_date:"2025-10-12",tier:"Primary",show:"Kimberly Akimbo",theatre:"Saenger Theatre",city:"New Orleans",ticket_range:"$25.00-$110.00",top_paid_price:114.53,num_performances:8,gross_gross:816790,gross_potential:1578796,gg_pct_gp:51.7,paid_tickets:10536,total_tickets:10808,total_capacity:20264,pct_capacity_paid:52,pct_capacity_total:53.3,on_subscription:1,avg_paid_admission:75.57},
+  {report_date:"2025-10-12",tier:"Primary",show:"Les Misérables 2022",theatre:"Pantages Theatre",city:"Los Angeles",ticket_range:"$41.00-$221.00",top_paid_price:616.25,num_performances:8,gross_gross:2292170,gross_potential:2250360,gg_pct_gp:101.9,paid_tickets:21496,total_tickets:21550,total_capacity:21624,pct_capacity_paid:99.4,pct_capacity_total:99.7,on_subscription:0,avg_paid_admission:106.37},
+  {report_date:"2025-10-12",tier:"Primary",show:"Life of Pi",theatre:"Fox Theatre",city:"St. Louis",ticket_range:"$33.00-$101.00",top_paid_price:121,num_performances:8,gross_gross:904731,gross_potential:2267488,gg_pct_gp:39.9,paid_tickets:12880,total_tickets:14073,total_capacity:33008,pct_capacity_paid:39,pct_capacity_total:42.6,on_subscription:1,avg_paid_admission:64.29},
+  {report_date:"2025-10-12",tier:"Primary",show:"MJ",theatre:"Ed Mirvish Theatre",city:"Toronto",ticket_range:"$39.00-$119.00",top_paid_price:235,num_performances:8,gross_gross:1210850,gross_potential:989872,gg_pct_gp:122.3,paid_tickets:15317,total_tickets:15334,total_capacity:15968,pct_capacity_paid:95.9,pct_capacity_total:96,on_subscription:1,avg_paid_admission:78.97},
+  {report_date:"2025-10-12",tier:"Primary",show:"Shucked",theatre:"Buell Theatre",city:"Denver",ticket_range:"$40.00-$125.00",top_paid_price:125,num_performances:8,gross_gross:1050620,gross_potential:1852800,gg_pct_gp:56.7,paid_tickets:14667,total_tickets:15533,total_capacity:22176,pct_capacity_paid:66.1,pct_capacity_total:70,on_subscription:1,avg_paid_admission:67.64},
+  {report_date:"2025-10-12",tier:"Primary",show:"SIX: The Musical (Boleyn)",theatre:"Benedum Center",city:"Pittsburgh",ticket_range:"$35.75-$120.75",top_paid_price:138.75,num_performances:8,gross_gross:1906865,gross_potential:2069658,gg_pct_gp:92.1,paid_tickets:20336,total_tickets:20386,total_capacity:22744,pct_capacity_paid:89.4,pct_capacity_total:89.6,on_subscription:0,avg_paid_admission:93.54},
+  {report_date:"2025-10-12",tier:"Primary",show:"Some Like it Hot",theatre:"Segerstrom Center for the Arts",city:"Costa Mesa",ticket_range:"$25.00-$120.00",top_paid_price:125.86,num_performances:8,gross_gross:893455,gross_potential:1736940,gg_pct_gp:51.4,paid_tickets:10638,total_tickets:11244,total_capacity:24144,pct_capacity_paid:44.1,pct_capacity_total:46.6,on_subscription:1,avg_paid_admission:79.46},
+  {report_date:"2025-10-12",tier:"Primary",show:"Stereophonic",theatre:"Paramount Theatre",city:"Seattle",ticket_range:"$35.00-$100.00",top_paid_price:135,num_performances:8,gross_gross:1108567,gross_potential:1866720,gg_pct_gp:59.4,paid_tickets:14820,total_tickets:15220,total_capacity:23128,pct_capacity_paid:64.1,pct_capacity_total:65.8,on_subscription:1,avg_paid_admission:72.84},
+  {report_date:"2025-10-12",tier:"Primary",show:"Suffs",theatre:"The Smith Center",city:"Las Vegas",ticket_range:"$25.00-$155.00",top_paid_price:155,num_performances:8,gross_gross:1214218,gross_potential:1606080,gg_pct_gp:75.6,paid_tickets:11758,total_tickets:11776,total_capacity:15832,pct_capacity_paid:74.3,pct_capacity_total:74.4,on_subscription:1,avg_paid_admission:103.11},
+  {report_date:"2025-10-12",tier:"Primary",show:"The Lion King Rafiki",theatre:"Cadillac Palace Theatre",city:"Chicago",ticket_range:"$30.00-$261.00",top_paid_price:261,num_performances:9,gross_gross:2288690,gross_potential:2202663,gg_pct_gp:103.9,paid_tickets:19505,total_tickets:19563,total_capacity:20826,pct_capacity_paid:93.7,pct_capacity_total:93.9,on_subscription:0,avg_paid_admission:116.99},
+  {report_date:"2025-10-12",tier:"Primary",show:"The Notebook",theatre:"Shea's Performing Arts Center",city:"Buffalo",ticket_range:"$37.00-$97.00",top_paid_price:117,num_performances:8,gross_gross:1568841,gross_potential:1689324,gg_pct_gp:92.9,paid_tickets:22027,total_tickets:22188,total_capacity:24152,pct_capacity_paid:91.2,pct_capacity_total:91.9,on_subscription:1,avg_paid_admission:70.71},
+  {report_date:"2025-10-12",tier:"Primary",show:"The Outsiders",theatre:"",city:"Tulsa",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1673217,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-12",tier:"Primary",show:"The Sound of Music 2025",theatre:"",city:"Durham",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1257184,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-12",tier:"Primary",show:"The Wiz 2025",theatre:"",city:"Miami",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1041096,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-12",tier:"Primary",show:"Wicked 2",theatre:"",city:"Charlotte",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1407930,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-12",tier:"Secondary",show:"Mrs. Doubtfire n/e",theatre:"Opera House In Lexington",city:"Lexington",ticket_range:"$65.00-$125.00",top_paid_price:150,num_performances:5,gross_gross:228317,gross_potential:441600,gg_pct_gp:51.7,paid_tickets:2513,total_tickets:2571,total_capacity:4320,pct_capacity_paid:58.2,pct_capacity_total:59.5,on_subscription:1,avg_paid_admission:88.8},
+  {report_date:"2025-10-12",tier:"Secondary",show:"The Book of Mormon n/e 2022",theatre:"Civic Center Music Hall",city:"Oklahoma City",ticket_range:"$19.33-$120.00",top_paid_price:130,num_performances:5,gross_gross:595568,gross_potential:938233,gg_pct_gp:63.5,paid_tickets:7701,total_tickets:7715,total_capacity:12145,pct_capacity_paid:63.4,pct_capacity_total:63.5,on_subscription:0,avg_paid_admission:77.2},
+  {report_date:"2025-10-12",tier:"Secondary",show:"Water for Elephants n/e",theatre:"DeVos Hall",city:"Grand Rapids",ticket_range:"$35.50-$115.50",top_paid_price:145.5,num_performances:8,gross_gross:1298980,gross_potential:1529872,gg_pct_gp:84.9,paid_tickets:15614,total_tickets:15763,total_capacity:18384,pct_capacity_paid:84.9,pct_capacity_total:85.7,on_subscription:1,avg_paid_admission:82.41},
+  {report_date:"2025-10-19",tier:"Primary",show:"& Juliet",theatre:"San Diego Civic Theatre",city:"San Diego",ticket_range:"$36.00-$141.00",top_paid_price:181,num_performances:8,gross_gross:1663084,gross_potential:1912584,gg_pct_gp:87,paid_tickets:19287,total_tickets:19770,total_capacity:23520,pct_capacity_paid:82,pct_capacity_total:84.1,on_subscription:1,avg_paid_admission:84.12},
+  {report_date:"2025-10-19",tier:"Primary",show:"A Beautiful Noise, The Neil Diamond Musical",theatre:"Walton Arts Center",city:"Fayetteville",ticket_range:"$38.00-$101.00",top_paid_price:115,num_performances:8,gross_gross:613591,gross_potential:780578,gg_pct_gp:78.6,paid_tickets:8375,total_tickets:8483,total_capacity:9608,pct_capacity_paid:87.2,pct_capacity_total:88.3,on_subscription:1,avg_paid_admission:72.33},
+  {report_date:"2025-10-19",tier:"Primary",show:"Back to the Future: The Musical",theatre:"Washington Pavilion",city:"Sioux Falls",ticket_range:"$39.00-$137.00",top_paid_price:157,num_performances:8,gross_gross:614631,gross_potential:1351624,gg_pct_gp:45.5,paid_tickets:8142,total_tickets:8197,total_capacity:14600,pct_capacity_paid:55.8,pct_capacity_total:56.1,on_subscription:0,avg_paid_admission:74.98},
+  {report_date:"2025-10-19",tier:"Primary",show:"Beauty and the Beast - 30th Anniversary",theatre:"Wharton Center for the Performing Arts",city:"East Lansing",ticket_range:"$25.50-$108.50",top_paid_price:150.5,num_performances:8,gross_gross:1447119,gross_potential:1489366,gg_pct_gp:97.2,paid_tickets:17211,total_tickets:17455,total_capacity:18032,pct_capacity_paid:95.4,pct_capacity_total:96.8,on_subscription:0,avg_paid_admission:82.91},
+  {report_date:"2025-10-19",tier:"Primary",show:"Hamilton (Angelica)",theatre:"Opera House",city:"Boston",ticket_range:"$8.00-$194.00",top_paid_price:294,num_performances:8,gross_gross:2345607,gross_potential:2437520,gg_pct_gp:96.2,paid_tickets:19438,total_tickets:19781,total_capacity:20720,pct_capacity_paid:93.8,pct_capacity_total:95.5,on_subscription:0,avg_paid_admission:118.58},
+  {report_date:"2025-10-19",tier:"Primary",show:"Harry Potter and the Cursed Child 2024",theatre:"Ohio Theatre",city:"Columbus",ticket_range:"$45.00-$155.00",top_paid_price:225,num_performances:8,gross_gross:1952948,gross_potential:2314960,gg_pct_gp:84.4,paid_tickets:18113,total_tickets:18300,total_capacity:22056,pct_capacity_paid:82.1,pct_capacity_total:83,on_subscription:1,avg_paid_admission:106.72},
+  {report_date:"2025-10-19",tier:"Primary",show:"Hell's Kitchen",theatre:"KeyBank State Theatre",city:"Cleveland",ticket_range:"$25.00-$105.00",top_paid_price:105,num_performances:8,gross_gross:1155631,gross_potential:1766560,gg_pct_gp:65.4,paid_tickets:15637,total_tickets:16479,total_capacity:23264,pct_capacity_paid:67.2,pct_capacity_total:70.8,on_subscription:1,avg_paid_admission:70.13},
+  {report_date:"2025-10-19",tier:"Primary",show:"Kimberly Akimbo",theatre:"Fox Theatre",city:"Atlanta",ticket_range:"$40.00-$115.00",top_paid_price:115,num_performances:8,gross_gross:1619708,gross_potential:2524325,gg_pct_gp:64.2,paid_tickets:21890,total_tickets:22238,total_capacity:34920,pct_capacity_paid:62.7,pct_capacity_total:63.7,on_subscription:1,avg_paid_admission:72.84},
+  {report_date:"2025-10-19",tier:"Primary",show:"Les Misérables 2022",theatre:"Pantages Theatre",city:"Los Angeles",ticket_range:"$41.00-$221.00",top_paid_price:616.25,num_performances:8,gross_gross:2248097,gross_potential:2062210,gg_pct_gp:109,paid_tickets:21564,total_tickets:21564,total_capacity:21624,pct_capacity_paid:99.7,pct_capacity_total:99.7,on_subscription:0,avg_paid_admission:104.25},
+  {report_date:"2025-10-19",tier:"Primary",show:"Life of Pi",theatre:"Fox Theatre",city:"St. Louis",ticket_range:"$30.00-$101.00",top_paid_price:121,num_performances:8,gross_gross:949012,gross_potential:2238517,gg_pct_gp:42.4,paid_tickets:13482,total_tickets:13551,total_capacity:33008,pct_capacity_paid:40.8,pct_capacity_total:41.1,on_subscription:1,avg_paid_admission:70.03},
+  {report_date:"2025-10-19",tier:"Primary",show:"MJ",theatre:"Ed Mirvish Theatre",city:"Toronto",ticket_range:"$39.00-$119.00",top_paid_price:239,num_performances:8,gross_gross:1234163,gross_potential:992251,gg_pct_gp:124.4,paid_tickets:15893,total_tickets:15919,total_capacity:15968,pct_capacity_paid:99.5,pct_capacity_total:99.7,on_subscription:1,avg_paid_admission:77.53},
+  {report_date:"2025-10-19",tier:"Primary",show:"Purple Rain pre",theatre:"State Theatre",city:"Minneapolis",ticket_range:"$64.00-$164.00",top_paid_price:264,num_performances:4,gross_gross:971826,gross_potential:1035408,gg_pct_gp:93.9,paid_tickets:7958,total_tickets:8346,total_capacity:8412,pct_capacity_paid:94.6,pct_capacity_total:99.2,on_subscription:0,avg_paid_admission:116.44},
+  {report_date:"2025-10-19",tier:"Primary",show:"Shucked",theatre:"Buell Theatre",city:"Denver",ticket_range:"$40.00-$125.00",top_paid_price:125,num_performances:8,gross_gross:1065799,gross_potential:1852800,gg_pct_gp:57.5,paid_tickets:13912,total_tickets:14053,total_capacity:22176,pct_capacity_paid:62.7,pct_capacity_total:63.4,on_subscription:1,avg_paid_admission:75.84},
+  {report_date:"2025-10-19",tier:"Primary",show:"SIX: The Musical (Boleyn)",theatre:"The Hanover Theatre",city:"Worcester",ticket_range:"$36.00-$91.00",top_paid_price:116,num_performances:8,gross_gross:912733,gross_potential:1339172,gg_pct_gp:68.2,paid_tickets:13746,total_tickets:13810,total_capacity:18184,pct_capacity_paid:75.6,pct_capacity_total:76,on_subscription:0,avg_paid_admission:66.09},
+  {report_date:"2025-10-19",tier:"Primary",show:"Some Like it Hot",theatre:"Segerstrom Center for the Arts",city:"Costa Mesa",ticket_range:"$25.00-$120.00",top_paid_price:125.86,num_performances:8,gross_gross:929826,gross_potential:1736940,gg_pct_gp:53.5,paid_tickets:11006,total_tickets:11023,total_capacity:24144,pct_capacity_paid:45.6,pct_capacity_total:45.7,on_subscription:1,avg_paid_admission:84.35},
+  {report_date:"2025-10-19",tier:"Primary",show:"Stereophonic",theatre:"First Interstate Center",city:"Spokane",ticket_range:"$45.00-$100.00",top_paid_price:100,num_performances:2,gross_gross:80054,gross_potential:411690,gg_pct_gp:19.4,paid_tickets:1270,total_tickets:1673,total_capacity:5222,pct_capacity_paid:24.3,pct_capacity_total:32,on_subscription:0,avg_paid_admission:47.85},
+  {report_date:"2025-10-19",tier:"Primary",show:"Stereophonic",theatre:"Hult Center",city:"Eugene",ticket_range:"$45.00-$120.00",top_paid_price:120,num_performances:4,gross_gross:173959,gross_potential:882060,gg_pct_gp:19.7,paid_tickets:2073,total_tickets:2620,total_capacity:9788,pct_capacity_paid:21.2,pct_capacity_total:26.8,on_subscription:0,avg_paid_admission:66.4},
+  {report_date:"2025-10-19",tier:"Primary",show:"Suffs",theatre:"ASU Gammage",city:"Tempe",ticket_range:"$24.00-$110.00",top_paid_price:155,num_performances:8,gross_gross:1344954,gross_potential:1699264,gg_pct_gp:79.1,paid_tickets:19093,total_tickets:19272,total_capacity:22856,pct_capacity_paid:83.5,pct_capacity_total:84.3,on_subscription:1,avg_paid_admission:69.79},
+  {report_date:"2025-10-19",tier:"Primary",show:"The Lion King Rafiki",theatre:"Cadillac Palace Theatre",city:"Chicago",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:2162808,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Primary",show:"The Notebook",theatre:"",city:"Cincinnati",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1250493,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Primary",show:"The Outsiders",theatre:"",city:"Nashville",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1623442,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Primary",show:"The Sound of Music 2025",theatre:"",city:"Dayton",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1223562,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Primary",show:"The Wiz 2025",theatre:"",city:"Tampa",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1340009,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Primary",show:"Wicked 2",theatre:"",city:"Charlotte",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1302783,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-19",tier:"Secondary",show:"Water for Elephants n/e",theatre:"Kentucky Center For The Perf. Arts",city:"Louisville",ticket_range:"$36.00-$115.00",top_paid_price:115,num_performances:8,gross_gross:1414443,gross_potential:1658096,gg_pct_gp:85.3,paid_tickets:17915,total_tickets:18150,total_capacity:19576,pct_capacity_paid:91.5,pct_capacity_total:92.7,on_subscription:1,avg_paid_admission:77.93},
+  {report_date:"2025-10-26",tier:"Primary",show:"& Juliet",theatre:"Pioneer Center",city:"Reno",ticket_range:"$62.00-$122.00",top_paid_price:138,num_performances:8,gross_gross:940883,gross_potential:1145568,gg_pct_gp:82.1,paid_tickets:9474,total_tickets:9509,total_capacity:11904,pct_capacity_paid:79.6,pct_capacity_total:79.9,on_subscription:1,avg_paid_admission:98.95},
+  {report_date:"2025-10-26",tier:"Primary",show:"A Beautiful Noise, The Neil Diamond Musical",theatre:"Des Moines Civic Center",city:"Des Moines",ticket_range:"$37.50-$145.50",top_paid_price:190.5,num_performances:8,gross_gross:1591920,gross_potential:1866488,gg_pct_gp:85.3,paid_tickets:17517,total_tickets:17743,total_capacity:21712,pct_capacity_paid:80.7,pct_capacity_total:81.7,on_subscription:1,avg_paid_admission:89.72},
+  {report_date:"2025-10-26",tier:"Primary",show:"Beauty and the Beast - 30th Anniversary",theatre:"Fox Cities Performing Arts Center",city:"Appleton",ticket_range:"$35.50-$135.50",top_paid_price:175.5,num_performances:8,gross_gross:1473230,gross_potential:1514868,gg_pct_gp:97.3,paid_tickets:15443,total_tickets:15590,total_capacity:15816,pct_capacity_paid:97.6,pct_capacity_total:98.6,on_subscription:1,avg_paid_admission:94.5},
+  {report_date:"2025-10-26",tier:"Primary",show:"Hamilton (Angelica)",theatre:"Opera House",city:"Boston",ticket_range:"$8.00-$194.00",top_paid_price:294,num_performances:8,gross_gross:2507893,gross_potential:2395920,gg_pct_gp:104.7,paid_tickets:20700,total_tickets:20712,total_capacity:20720,pct_capacity_paid:99.9,pct_capacity_total:100,on_subscription:0,avg_paid_admission:121.08},
+  {report_date:"2025-10-26",tier:"Primary",show:"Harry Potter and the Cursed Child 2024",theatre:"Ohio Theatre",city:"Columbus",ticket_range:"$45.00-$155.00",top_paid_price:225,num_performances:8,gross_gross:1465503,gross_potential:2314960,gg_pct_gp:63.3,paid_tickets:14986,total_tickets:15249,total_capacity:22056,pct_capacity_paid:67.9,pct_capacity_total:69.1,on_subscription:0,avg_paid_admission:96.1},
+  {report_date:"2025-10-26",tier:"Primary",show:"Hell's Kitchen",theatre:"KeyBank State Theatre",city:"Cleveland",ticket_range:"$21.00-$101.00",top_paid_price:101,num_performances:8,gross_gross:1185300,gross_potential:1766560,gg_pct_gp:67.1,paid_tickets:16431,total_tickets:16527,total_capacity:23264,pct_capacity_paid:70.6,pct_capacity_total:71,on_subscription:1,avg_paid_admission:71.72},
+  {report_date:"2025-10-26",tier:"Primary",show:"Kimberly Akimbo",theatre:"Academy of Music: Kimmel Center",city:"Philadelphia",ticket_range:"$34.00-$124.00",top_paid_price:124,num_performances:8,gross_gross:400997,gross_potential:1103985,gg_pct_gp:36.3,paid_tickets:5203,total_tickets:6340,total_capacity:12168,pct_capacity_paid:42.8,pct_capacity_total:52.1,on_subscription:1,avg_paid_admission:63.25},
+  {report_date:"2025-10-26",tier:"Primary",show:"Life of Pi",theatre:"Broward Center For The Perf. Arts",city:"Fort Lauderdale",ticket_range:"$35.00-$110.00",top_paid_price:140,num_performances:8,gross_gross:888685,gross_potential:1830320,gg_pct_gp:48.6,paid_tickets:10049,total_tickets:10722,total_capacity:20696,pct_capacity_paid:48.6,pct_capacity_total:51.8,on_subscription:1,avg_paid_admission:82.88},
+  {report_date:"2025-10-26",tier:"Primary",show:"MJ",theatre:"Ed Mirvish Theatre",city:"Toronto",ticket_range:"$39.00-$119.00",top_paid_price:239,num_performances:8,gross_gross:1330287,gross_potential:997375,gg_pct_gp:133.4,paid_tickets:15958,total_tickets:15981,total_capacity:15968,pct_capacity_paid:99.9,pct_capacity_total:100.1,on_subscription:0,avg_paid_admission:83.24},
+  {report_date:"2025-10-26",tier:"Primary",show:"Moulin Rouge! The Musical",theatre:"Popejoy Hall",city:"Albuquerque",ticket_range:"$47.00-$117.00",top_paid_price:149,num_performances:7,gross_gross:1109401,gross_potential:1205106,gg_pct_gp:92.1,paid_tickets:11015,total_tickets:11094,total_capacity:13125,pct_capacity_paid:83.9,pct_capacity_total:84.5,on_subscription:1,avg_paid_admission:100},
+  {report_date:"2025-10-26",tier:"Primary",show:"Purple Rain pre",theatre:"State Theatre",city:"Minneapolis",ticket_range:"$64.00-$174.00",top_paid_price:264,num_performances:6,gross_gross:1302399,gross_potential:1300000,gg_pct_gp:100.2,paid_tickets:11784,total_tickets:12340,total_capacity:12618,pct_capacity_paid:93.4,pct_capacity_total:97.8,on_subscription:1,avg_paid_admission:105.54},
+  {report_date:"2025-10-26",tier:"Primary",show:"Shucked",theatre:"Morrison Center for the Perf. Arts",city:"Boise",ticket_range:"$34.00-$110.00",top_paid_price:129,num_performances:8,gross_gross:1016015,gross_potential:1204600,gg_pct_gp:84.3,paid_tickets:12967,total_tickets:13078,total_capacity:15536,pct_capacity_paid:83.5,pct_capacity_total:84.2,on_subscription:1,avg_paid_admission:77.69},
+  {report_date:"2025-10-26",tier:"Primary",show:"SIX: The Musical (Boleyn)",theatre:"Providence Performing Arts Center",city:"Providence",ticket_range:"$41.00-$81.00",top_paid_price:91,num_performances:7,gross_gross:1031262,gross_potential:1417563,gg_pct_gp:72.7,paid_tickets:15177,total_tickets:15637,total_capacity:21623,pct_capacity_paid:70.2,pct_capacity_total:72.3,on_subscription:0,avg_paid_admission:65.95},
+  {report_date:"2025-10-26",tier:"Primary",show:"Some Like it Hot",theatre:"San Jose Center For The Perf. Arts",city:"San Jose",ticket_range:"$40.00-$115.00",top_paid_price:115,num_performances:8,gross_gross:729641,gross_potential:1711080,gg_pct_gp:42.6,paid_tickets:10084,total_tickets:10659,total_capacity:19704,pct_capacity_paid:51.2,pct_capacity_total:54.1,on_subscription:1,avg_paid_admission:68.45},
+  {report_date:"2025-10-26",tier:"Primary",show:"Stereophonic",theatre:"The Smith Center",city:"Las Vegas",ticket_range:"$25.00-$135.00",top_paid_price:145,num_performances:8,gross_gross:1031027,gross_potential:1397120,gg_pct_gp:73.8,paid_tickets:11296,total_tickets:11436,total_capacity:16160,pct_capacity_paid:69.9,pct_capacity_total:70.8,on_subscription:1,avg_paid_admission:90.16},
+  {report_date:"2025-10-26",tier:"Primary",show:"Suffs",theatre:"Orpheum Theatre",city:"San Francisco",ticket_range:"$48.00-$155.00",top_paid_price:155,num_performances:8,gross_gross:891042,gross_potential:1629506,gg_pct_gp:54.7,paid_tickets:10680,total_tickets:11025,total_capacity:17576,pct_capacity_paid:60.8,pct_capacity_total:62.7,on_subscription:1,avg_paid_admission:80.82},
+  {report_date:"2025-10-26",tier:"Primary",show:"The Lion King Rafiki",theatre:"Buell Theatre",city:"Denver",ticket_range:"$40.00-$195.00",top_paid_price:195,num_performances:6,gross_gross:1406554,gross_potential:1553415,gg_pct_gp:90.5,paid_tickets:15391,total_tickets:15802,total_capacity:16542,pct_capacity_paid:93,pct_capacity_total:95.5,on_subscription:0,avg_paid_admission:89.01},
+  {report_date:"2025-10-26",tier:"Primary",show:"The Notebook",theatre:"",city:"Cincinnati",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1283801,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-26",tier:"Primary",show:"The Outsiders",theatre:"",city:"Austin",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1780012,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-26",tier:"Primary",show:"The Sound of Music 2025",theatre:"",city:"Chicago",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1225513,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-26",tier:"Primary",show:"The Wiz 2025",theatre:"",city:"West Palm Beach",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1154875,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-26",tier:"Primary",show:"Wicked 2",theatre:"",city:"Charlotte",ticket_range:null,top_paid_price:null,num_performances:null,gross_gross:1331914,gross_potential:null,gg_pct_gp:null,paid_tickets:null,total_tickets:null,total_capacity:null,pct_capacity_paid:null,pct_capacity_total:null,on_subscription:0,avg_paid_admission:null},
+  {report_date:"2025-10-26",tier:"Secondary",show:"Clue n/e",theatre:"Auditorium Theatre",city:"Rochester",ticket_range:"$35.00-$95.00",top_paid_price:95,num_performances:8,gross_gross:945979,gross_potential:1345120,gg_pct_gp:70.3,paid_tickets:13079,total_tickets:13387,total_capacity:19712,pct_capacity_paid:66.4,pct_capacity_total:67.9,on_subscription:1,avg_paid_admission:70.66},
+  {report_date:"2025-10-26",tier:"Secondary",show:"Mrs. Doubtfire n/e",theatre:"Hammons Hall",city:"Springfield",ticket_range:"$39.00-$84.00",top_paid_price:84,num_performances:3,gross_gross:247359,gross_potential:454749,gg_pct_gp:54.4,paid_tickets:3889,total_tickets:3975,total_capacity:6630,pct_capacity_paid:58.7,pct_capacity_total:60,on_subscription:1,avg_paid_admission:62.23},
+  {report_date:"2025-10-26",tier:"Secondary",show:"Mrs. Doubtfire n/e",theatre:"Robinson Performance Hall",city:"Little Rock",ticket_range:"$25.00-$110.00",top_paid_price:110,num_performances:4,gross_gross:294454,gross_potential:596840,gg_pct_gp:49.3,paid_tickets:4816,total_tickets:5148,total_capacity:8888,pct_capacity_paid:54.2,pct_capacity_total:57.9,on_subscription:1,avg_paid_admission:57.2},
+  {report_date:"2025-10-26",tier:"Secondary",show:"The Addams Family n/e 2025",theatre:"Bass Performance Hall",city:"Fort Worth",ticket_range:"$40.00-$100.00",top_paid_price:100,num_performances:5,gross_gross:515924,gross_potential:832710,gg_pct_gp:62,paid_tickets:6772,total_tickets:6872,total_capacity:9810,pct_capacity_paid:69,pct_capacity_total:70.1,on_subscription:0,avg_paid_admission:75.08},
+  {report_date:"2025-10-26",tier:"Secondary",show:"The Book of Mormon n/e 2022",theatre:"Overture Center",city:"Madison",ticket_range:"$30.50-$150.50",top_paid_price:185.5,num_performances:5,gross_gross:1106002,gross_potential:1094986,gg_pct_gp:101,paid_tickets:10833,total_tickets:10836,total_capacity:11035,pct_capacity_paid:98.2,pct_capacity_total:98.2,on_subscription:0,avg_paid_admission:102.07},
+  {report_date:"2025-10-26",tier:"Secondary",show:"Water for Elephants n/e",theatre:"Peace Center For The Perf. Arts",city:"Greenville",ticket_range:"$60.50-$105.50",top_paid_price:105.5,num_performances:8,gross_gross:1120587,gross_potential:1564260,gg_pct_gp:71.6,paid_tickets:11181,total_tickets:11248,total_capacity:16440,pct_capacity_paid:68,pct_capacity_total:68.4,on_subscription:1,avg_paid_admission:99.63},
+];
+
+// ── STORAGE ────────────────────────────────────────────────────────────────────
+const STORAGE_KEY = 'btd_exec_v3';
+
+async function saveData(records) {
+  try {
+    if (window.storage) await window.storage.set(STORAGE_KEY, JSON.stringify(records));
+    else localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+  } catch(e){ console.warn('Storage unavailable:', e); }
+}
+
+async function initData() {
+  // If a live endpoint is configured, fetch from it directly
+  if (DATA_ENDPOINT) {
+    try {
+      const res = await fetch(DATA_ENDPOINT);
+      const json = await res.json();
+      // Expects an array of row objects. Adjust field mapping here if SharePoint
+      // column names differ from dashboard field names.
+      ALL_DATA = json.value || json;
+      boot();
+      return;
+    } catch(e) {
+      console.warn('Endpoint fetch failed, falling back to local data:', e);
+    }
+  }
+
+  // Local storage fallback (used during GitHub Pages / seed phase)
+  let stored = null;
+  try {
+    if (window.storage) {
+      const res = await window.storage.get(STORAGE_KEY);
+      if (res) stored = JSON.parse(res.value);
+    } else {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) stored = JSON.parse(raw);
+    }
+  } catch(e){}
+  ALL_DATA = (stored && stored.length > 0) ? stored : [...SEED];
+  if (!stored || stored.length === 0) await saveData(ALL_DATA);
+  boot();
+}
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let ALL_DATA = [];
+let FILTERED = [];
+let SORT_COL = 'gross_gross';
+let SORT_DIR = -1;
+let ACTIVE_TIER = '';
+let ACTIVE_SUB = '';
+let CHARTS = {};
+
+// ── BOOT ──────────────────────────────────────────────────────────────────────
+function boot() {
+  populateWeekDropdown();
+  populateShowList();
+  updateDataStatus();
+  applyFilters();
+}
+
+function populateWeekDropdown() {
+  const weeks = [...new Set(ALL_DATA.map(d=>d.report_date))].sort();
+  const sel = document.getElementById('fDate');
+  sel.innerHTML = '<option value="">All Weeks</option>' +
+    weeks.map(w=>`<option value="${w}">${fmtWeek(w)}</option>`).join('');
+}
+
+function populateShowList() {
+  const shows = [...new Set(ALL_DATA.map(d=>d.show))].sort();
+  document.getElementById('showList').innerHTML = shows.map(s=>
+    `<label><input type="checkbox" class="sCb" value="${s}" checked> ${s}</label>`
+  ).join('');
+  document.querySelectorAll('.sCb').forEach(cb=>cb.addEventListener('change', ()=>{updateShowCount();applyFilters();}));
+  updateShowCount();
+}
+
+function filterShowList() {
+  const q = document.getElementById('showSearch').value.toLowerCase().trim();
+  document.querySelectorAll('#showList label').forEach(label => {
+    const name = label.querySelector('input').value.toLowerCase();
+    label.classList.toggle('hidden', q !== '' && !name.includes(q));
+  });
+  updateShowCount();
+}
+
+function updateShowCount() {
+  const total = document.querySelectorAll('.sCb').length;
+  const checked = document.querySelectorAll('.sCb:checked').length;
+  const el = document.getElementById('showCount');
+  el.textContent = checked === total ? `All ${total} shows` : `${checked} of ${total} selected`;
+  el.style.color = checked < total ? 'var(--amber)' : 'var(--ink3)';
+}
+
+function selectAllShows() { document.querySelectorAll('.sCb').forEach(cb=>cb.checked=true); updateShowCount(); applyFilters(); }
+function clearAllShows() { document.querySelectorAll('.sCb').forEach(cb=>cb.checked=false); updateShowCount(); applyFilters(); }
+function soloSearchedShows() {
+  const q = document.getElementById('showSearch').value.toLowerCase().trim();
+  if (!q) return;
+  document.querySelectorAll('.sCb').forEach(cb => { cb.checked = cb.value.toLowerCase().includes(q); });
+  updateShowCount(); applyFilters();
+}
+
+function updateDataStatus() {
+  const weeks = [...new Set(ALL_DATA.map(d=>d.report_date))];
+  document.getElementById('dataStatus').innerHTML =
+    `<strong>${ALL_DATA.length}</strong> records · <strong>${weeks.length}</strong> weeks · v3`;
+}
+
+// ── FILTERS ───────────────────────────────────────────────────────────────────
+function setTier(btn, val) {
+  ACTIVE_TIER = val;
+  document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('active', b.dataset.tier===val));
+  applyFilters();
+}
+function setSub(btn, val) {
+  ACTIVE_SUB = val;
+  document.querySelectorAll('[data-sub]').forEach(b=>b.classList.toggle('active', b.dataset.sub===val));
+  applyFilters();
+}
+
+function applyFilters() {
+  const dateF = document.getElementById('fDate').value;
+  const grossMin = parseFloat(document.getElementById('fGrossMin').value)||0;
+  const grossMax = parseFloat(document.getElementById('fGrossMax').value)||Infinity;
+  const capMin = parseFloat(document.getElementById('fCapMin').value)||0;
+  const capMax = parseFloat(document.getElementById('fCapMax').value)||Infinity;
+  const perfMin = parseFloat(document.getElementById('fPerfMin').value)||0;
+  const perfMax = parseFloat(document.getElementById('fPerfMax').value)||Infinity;
+  const checked = [...document.querySelectorAll('.sCb:checked')].map(c=>c.value);
+
+  FILTERED = ALL_DATA.filter(d => {
+    if (dateF && d.report_date !== dateF) return false;
+    if (ACTIVE_TIER && d.tier !== ACTIVE_TIER) return false;
+    if (ACTIVE_SUB !== '' && String(d.on_subscription) !== ACTIVE_SUB) return false;
+    if (d.gross_gross !== null) {
+      if (d.gross_gross < grossMin || d.gross_gross > grossMax) return false;
+    } else if (grossMin > 0) return false;
+    if (d.pct_capacity_paid !== null) {
+      if (d.pct_capacity_paid < capMin || d.pct_capacity_paid > capMax) return false;
+    }
+    if (d.num_performances !== null) {
+      if (d.num_performances < perfMin || d.num_performances > perfMax) return false;
+    }
+    if (!checked.includes(d.show)) return false;
+    return true;
+  });
+
+  renderKPIs();
+  renderTable();
+  const activeTab = document.querySelector('.nav-tab.active');
+  if (activeTab) {
+    const t = activeTab.textContent.toLowerCase().trim();
+    if (t.includes('chart')) renderCharts();
+    if (t.includes('rank')) renderRankings();
+  }
+}
+
+function resetFilters() {
+  document.getElementById('fDate').value = '';
+  document.getElementById('fGrossMin').value = '';
+  document.getElementById('fGrossMax').value = '';
+  document.getElementById('fCapMin').value = '';
+  document.getElementById('fCapMax').value = '';
+  document.getElementById('fPerfMin').value = '';
+  document.getElementById('fPerfMax').value = '';
+  document.getElementById('showSearch').value = '';
+  filterShowList(); setTier(null,''); setSub(null,''); selectAllShows();
+}
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+const fmt$ = v => v==null?'—': v>=1e6?'$'+(v/1e6).toFixed(2)+'M': v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v.toFixed(0);
+const fmtN = (v,d=1) => v==null?'—':v.toFixed(d);
+const avg = arr => { const v=arr.filter(x=>x!=null); return v.length?v.reduce((a,b)=>a+b,0)/v.length:null; };
+const fmtWeek = d => {
+  if(!d) return '';
+  const parts = d.split('-');
+  const y = parts[0], m = parseInt(parts[1]), dy = parseInt(parts[2]);
+  return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1]} ${dy}, ${y}`;
+};
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function renderKPIs() {
+  const wg = FILTERED.filter(d=>d.gross_gross!=null);
+  document.getElementById('kCount').textContent = wg.length;
+  document.getElementById('kGross').textContent = fmt$(wg.reduce((a,d)=>a+d.gross_gross,0));
+  const ac = avg(FILTERED.map(d=>d.pct_capacity_paid));
+  document.getElementById('kCap').textContent = ac?fmtN(ac)+'%':'—';
+  const ag = avg(FILTERED.map(d=>d.gg_pct_gp));
+  document.getElementById('kGgPct').textContent = ag?fmtN(ag)+'%':'—';
+  const aa = avg(FILTERED.map(d=>d.avg_paid_admission));
+  document.getElementById('kAdm').textContent = aa?'$'+fmtN(aa,2):'—';
+  const subG = avg(FILTERED.filter(d=>d.on_subscription===1&&d.gross_gross).map(d=>d.gross_gross));
+  const nonG = avg(FILTERED.filter(d=>d.on_subscription===0&&d.gross_gross).map(d=>d.gross_gross));
+  document.getElementById('kSub').textContent = subG&&nonG?fmt$(subG)+' / '+fmt$(nonG):'—';
+}
+
+// ── TABLE ─────────────────────────────────────────────────────────────────────
+function sortBy(col) {
+  if (SORT_COL===col) SORT_DIR*=-1; else { SORT_COL=col; SORT_DIR=-1; }
+  document.querySelectorAll('thead th span[id^="s-"]').forEach(s=>s.textContent='');
+  const el = document.getElementById('s-'+col);
+  if(el) el.textContent = SORT_DIR===-1?' ↓':' ↑';
+  renderTable();
+}
+
+function renderTable() {
+  const sorted = [...FILTERED].sort((a,b)=>{
+    const av=a[SORT_COL],bv=b[SORT_COL];
+    if(av==null&&bv==null)return 0; if(av==null)return 1; if(bv==null)return -1;
+    return SORT_DIR*(av>bv?1:av<bv?-1:0);
+  });
+  const tb = document.getElementById('tableBody');
+  document.getElementById('tableCount').textContent = `${sorted.length} engagements`;
+  if(!sorted.length){tb.innerHTML='<tr><td colspan="14" class="no-data">No data matches current filters</td></tr>';return;}
+  tb.innerHTML = sorted.map(d=>{
+    const pct=d.pct_capacity_paid;
+    const fc = pct>95?'fill-hi':pct<50?'fill-lo':'fill-mid';
+    const bw = pct?Math.min(pct,100):0;
+    const wk = fmtWeek(d.report_date);
+    return `<tr>
+      <td style="font-family:var(--mono);font-size:0.65rem;color:var(--ink3)">${wk}</td>
+      <td><span class="badge badge-${d.tier.toLowerCase()}">${d.tier}</span></td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;font-weight:500;color:var(--ink)">${d.show}</td>
+      <td>${d.city}</td>
+      <td style="font-family:var(--mono);text-align:right">${d.num_performances??'—'}</td>
+      <td style="font-family:var(--mono);font-weight:600;color:var(--ink)">${fmt$(d.gross_gross)}</td>
+      <td style="font-family:var(--mono);color:var(--ink3)">${fmt$(d.gross_potential)}</td>
+      <td style="font-family:var(--mono)">${d.gg_pct_gp!=null?fmtN(d.gg_pct_gp)+'%':'—'}</td>
+      <td><div class="cap-cell"><div class="cap-bar"><div class="cap-fill ${fc}" style="width:${bw}%"></div></div><span style="font-family:var(--mono)">${pct!=null?fmtN(pct)+'%':'—'}</span></div></td>
+      <td style="font-family:var(--mono);color:var(--ink3)">${d.total_capacity!=null?d.total_capacity.toLocaleString():'—'}</td>
+      <td style="font-family:var(--mono);color:var(--ink3)">${d.paid_tickets!=null?d.paid_tickets.toLocaleString():'—'}</td>
+      <td style="font-family:var(--mono)">${d.avg_paid_admission!=null?'$'+fmtN(d.avg_paid_admission,2):'—'}</td>
+      <td style="font-family:var(--mono)">${d.top_paid_price?'$'+d.top_paid_price:'—'}</td>
+      <td style="text-align:center">${d.on_subscription?'<span class="sub-y">✓</span>':'<span class="sub-n">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── CHARTS ────────────────────────────────────────────────────────────────────
+const CC = {
+  amber:'#B8620A', amberA:'rgba(184,98,10,0.5)',
+  teal:'#0A6B5E', rose:'#B0303A',
+  grid:'rgba(0,0,0,0.06)', text:'#6b6b6b',
+  cobalt:'#1A4E8A'
+};
+
+function dc(id){ if(CHARTS[id]){ CHARTS[id].destroy(); delete CHARTS[id]; } }
+
+function renderCharts() {
+  Chart.defaults.color = CC.text;
+  Chart.defaults.font.family = "'IBM Plex Sans', sans-serif";
+  Chart.defaults.font.size = 10;
+
+  dc('sg');
+  const byShow={};
+  FILTERED.forEach(d=>{if(d.gross_gross)byShow[d.show]=(byShow[d.show]||0)+d.gross_gross;});
+  const se=Object.entries(byShow).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  CHARTS.sg=new Chart(document.getElementById('cShowGross'),{type:'bar',
+    data:{labels:se.map(([s])=>s.length>22?s.slice(0,22)+'…':s),
+          datasets:[{data:se.map(([,v])=>v),backgroundColor:CC.amber,borderRadius:2}]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:CC.grid},ticks:{callback:v=>fmt$(v)}},y:{grid:{display:false}}}}});
+
+  dc('gp');
+  const ggS={},ggC={};
+  FILTERED.forEach(d=>{if(d.gg_pct_gp){ggS[d.show]=(ggS[d.show]||0)+d.gg_pct_gp;ggC[d.show]=(ggC[d.show]||0)+1;}});
+  const ge=Object.entries(ggS).map(([s,v])=>[s,v/ggC[s]]).sort((a,b)=>b[1]-a[1]).slice(0,12);
+  CHARTS.gp=new Chart(document.getElementById('cGgPct'),{type:'bar',
+    data:{labels:ge.map(([s])=>s.length>22?s.slice(0,22)+'…':s),
+          datasets:[{data:ge.map(([,v])=>v),backgroundColor:ge.map(([,v])=>v>100?CC.teal:CC.amber),borderRadius:2}]},
+    options:{indexAxis:'y',responsive:true,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:CC.grid},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}}});
+
+  dc('wk');
+  const weeks=[...new Set(ALL_DATA.map(d=>d.report_date))].sort();
+  const wkGross=weeks.map(w=>FILTERED.filter(d=>d.report_date===w&&d.gross_gross).reduce((a,d)=>a+d.gross_gross,0));
+  CHARTS.wk=new Chart(document.getElementById('cWeekly'),{type:'line',
+    data:{labels:weeks.map(w=>fmtWeek(w)),
+          datasets:[{data:wkGross,borderColor:CC.amber,backgroundColor:'rgba(184,98,10,0.07)',fill:true,tension:0.35,pointBackgroundColor:CC.amber,pointRadius:4,pointBorderColor:'#fff',pointBorderWidth:2}]},
+    options:{responsive:true,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:CC.grid}},y:{grid:{color:CC.grid},ticks:{callback:v=>fmt$(v)}}}}});
+
+  dc('sc');
+  const subG=avg(FILTERED.filter(d=>d.on_subscription===1&&d.gross_gross).map(d=>d.gross_gross));
+  const nonG=avg(FILTERED.filter(d=>d.on_subscription===0&&d.gross_gross).map(d=>d.gross_gross));
+  const subCap=avg(FILTERED.filter(d=>d.on_subscription===1&&d.pct_capacity_paid).map(d=>d.pct_capacity_paid));
+  const nonCap=avg(FILTERED.filter(d=>d.on_subscription===0&&d.pct_capacity_paid).map(d=>d.pct_capacity_paid));
+  CHARTS.sc=new Chart(document.getElementById('cSubComp'),{type:'bar',
+    data:{labels:['Avg Gross','Avg % Cap Paid'],
+          datasets:[{label:'Subscribed',data:[subG||0,subCap||0],backgroundColor:CC.amber,borderRadius:2},
+                    {label:'Non-Subscribed',data:[nonG||0,nonCap||0],backgroundColor:'rgba(26,78,138,0.65)',borderRadius:2}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:CC.text,font:{size:10}}}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:CC.grid},ticks:{callback:(v,i,vals)=>{
+        const mx=Math.max(...vals.map(t=>t.value));
+        return mx>1000?fmt$(v):v.toFixed(0)+'%';
+      }}}}}});
+
+  dc('mc');
+  const mkCap={},mkCnt={};
+  FILTERED.forEach(d=>{if(d.pct_capacity_paid){mkCap[d.city]=(mkCap[d.city]||0)+d.pct_capacity_paid;mkCnt[d.city]=(mkCnt[d.city]||0)+1;}});
+  const mce=Object.entries(mkCap).map(([c,v])=>[c,v/mkCnt[c]]).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  CHARTS.mc=new Chart(document.getElementById('cMarketCap'),{type:'bar',
+    data:{labels:mce.map(([c])=>c),
+          datasets:[{data:mce.map(([,v])=>v),backgroundColor:mce.map(([,v])=>v>90?CC.teal:v<60?CC.rose:CC.amber),borderRadius:2}]},
+    options:{responsive:true,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false}},y:{grid:{color:CC.grid},min:0,max:110,ticks:{callback:v=>v+'%'}}}}});
+}
+
+// ── RANKINGS ─────────────────────────────────────────────────────────────────
+function mkRankList(id,items,valFn,labelFn,fmtFn,maxVal) {
+  const el=document.getElementById(id);
+  if(!items.length){el.innerHTML='<div class="no-data">No data available</div>';return;}
+  el.innerHTML=items.map((d,i)=>{
+    const v=valFn(d); const pct=maxVal?Math.min((v/maxVal)*100,100):100;
+    return `<div class="rank-item">
+      <div class="rank-n ${i<3?'top':''}">${i+1}</div>
+      <div class="rank-body">
+        <div class="rank-name">${d._label||d.show}</div>
+        <div class="rank-detail">${labelFn(d)}</div>
+        <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${pct}%"></div></div>
+      </div>
+      <div class="rank-val">${fmtFn(v)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderRankings() {
+  const sg={};
+  FILTERED.forEach(d=>{if(d.gross_gross)sg[d.show]=(sg[d.show]||0)+d.gross_gross;});
+  const sgArr=Object.entries(sg).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([s,v])=>({_label:s,_val:v}));
+  mkRankList('rShowGross',sgArr,d=>d._val,()=>'cumulative gross',fmt$,sgArr[0]?._val);
+
+  const weeks=[...new Set(FILTERED.map(d=>d.report_date))].sort();
+  if(weeks.length>=2){
+    const w1=weeks[weeks.length-2],w2=weeks[weeks.length-1];
+    const ww=[];
+    const showsW2=[...new Set(FILTERED.filter(d=>d.report_date===w2&&d.gross_gross).map(d=>d.show))];
+    showsW2.forEach(s=>{
+      const r1=FILTERED.find(d=>d.report_date===w1&&d.show===s&&d.gross_gross);
+      const r2=FILTERED.find(d=>d.report_date===w2&&d.show===s&&d.gross_gross);
+      if(r1&&r2){const chg=((r2.gross_gross-r1.gross_gross)/r1.gross_gross)*100;ww.push({_label:s,_val:chg,_g2:r2.gross_gross});}
+    });
+    ww.sort((a,b)=>b._val-a._val);
+    const gainers=ww.filter(d=>d._val>0).slice(0,5);
+    const losers=ww.filter(d=>d._val<0).sort((a,b)=>a._val-b._val).slice(0,3);
+    const combined=[...gainers,...losers];
+    document.getElementById('rShowWow').innerHTML = combined.length?combined.map((d,i)=>{
+      const isPos=d._val>=0;
+      const col=isPos?CC.teal:CC.rose;
+      return `<div class="rank-item">
+        <div class="rank-n ${i<3&&isPos?'top':''}">${i+1}</div>
+        <div class="rank-body">
+          <div class="rank-name">${d._label}</div>
+          <div class="rank-detail">${fmtWeek(w1)} → ${fmtWeek(w2)} · ${fmt$(d._g2)}</div>
+          <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${Math.min(Math.abs(d._val),100)}%;background:${col}"></div></div>
+        </div>
+        <div class="rank-val" style="color:${col}">${isPos?'+':''}${fmtN(d._val)}%</div>
+      </div>`;
+    }).join(''):'<div class="no-data">Need 2+ weeks of data for same show</div>';
+  } else {
+    document.getElementById('rShowWow').innerHTML='<div class="no-data">Need 2+ weeks for comparison</div>';
+  }
+
+  const mg={};
+  FILTERED.forEach(d=>{if(d.gross_gross)mg[d.city]=(mg[d.city]||0)+d.gross_gross;});
+  const mgArr=Object.entries(mg).sort((a,b)=>b[1]-a[1]).slice(0,10).map(([c,v])=>({_label:c,_val:v}));
+  mkRankList('rMarketGross',mgArr,d=>d._val,()=>'total gross',fmt$,mgArr[0]?._val);
+
+  const mc={},mcc={};
+  FILTERED.forEach(d=>{if(d.pct_capacity_paid){mc[d.city]=(mc[d.city]||0)+d.pct_capacity_paid;mcc[d.city]=(mcc[d.city]||0)+1;}});
+  const mcArr=Object.entries(mc).map(([c,v])=>({_label:c,_val:v/mcc[c]})).sort((a,b)=>b._val-a._val).slice(0,10);
+  mkRankList('rMarketCap',mcArr,d=>d._val,d=>{
+    const shows=FILTERED.filter(x=>x.city===d._label&&x.pct_capacity_paid).length;
+    return `${shows} engagement${shows!==1?'s':''}`;
+  },v=>fmtN(v)+'%',100);
+
+  dc('ts');
+  const sizeB=[{label:'< 5K',min:0,max:5000},{label:'5–10K',min:5000,max:10000},
+    {label:'10–15K',min:10000,max:15000},{label:'15–20K',min:15000,max:20000},{label:'20K+',min:20000,max:Infinity}];
+  const sizeData=sizeB.map(b=>{
+    const items=FILTERED.filter(d=>d.total_capacity&&d.pct_capacity_paid&&d.total_capacity>=b.min&&d.total_capacity<b.max);
+    return {label:b.label,avgCap:avg(items.map(d=>d.pct_capacity_paid)),avgGross:avg(items.map(d=>d.gross_gross)),count:items.length};
+  });
+  document.getElementById('rTheatreSize').innerHTML=sizeData.map(b=>`
+    <div class="size-cell">
+      <div class="size-lbl">${b.label}</div>
+      <div class="size-val">${b.avgCap?fmtN(b.avgCap)+'%':'—'}</div>
+      <div class="size-sub">${b.count} shows · ${fmt$(b.avgGross)}</div>
+    </div>`).join('');
+  CHARTS.ts=new Chart(document.getElementById('cTheatreSize'),{type:'bar',
+    data:{labels:sizeData.map(b=>b.label),
+          datasets:[{label:'Avg % Cap Paid',data:sizeData.map(b=>b.avgCap||0),backgroundColor:CC.amber,borderRadius:2,yAxisID:'y'},
+                    {label:'Avg Gross',data:sizeData.map(b=>b.avgGross||0),backgroundColor:'rgba(26,78,138,0.5)',borderRadius:2,yAxisID:'y2'}]},
+    options:{responsive:true,plugins:{legend:{labels:{color:CC.text,font:{size:10}}}},
+      scales:{y:{grid:{color:CC.grid},position:'left',ticks:{callback:v=>v+'%'},max:110},
+              y2:{grid:{display:false},position:'right',ticks:{callback:v=>fmt$(v)}}}}});
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────────
+function showTab(name) {
+  const names=['table','charts','rankings'];
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{t.classList.toggle('active',names[i]===name);});
+  document.querySelectorAll('.panel').forEach(p=>{p.classList.toggle('active',p.id==='tab-'+name);});
+  if(name==='charts') renderCharts();
+  if(name==='rankings') renderRankings();
+}
+
+// ── IMPORT — commented out pending Power Automate / SharePoint List wiring ────
+/*
+function openImport(){ document.getElementById('importModal').classList.add('open'); }
+function closeImport(){ document.getElementById('importModal').classList.remove('open'); document.getElementById('importLog').style.display='none'; }
+
+function log(msg,color='#6b6b6b'){
+  const el=document.getElementById('importLog');
+  el.style.display='block';
+  el.innerHTML+=`<div style="color:${color}">${msg}</div>`;
+  el.scrollTop=el.scrollHeight;
+}
+
+document.getElementById('fileInput').addEventListener('change',e=>{
+  if(e.target.files[0]) processFile(e.target.files[0]);
+  e.target.value='';
+});
+
+const dz=document.getElementById('dropZone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');if(e.dataTransfer.files[0])processFile(e.dataTransfer.files[0]);});
+
+function safeF(v){if(v==null||v===''||v===undefined)return null;const n=parseFloat(String(v).replace(/[$%,]/g,''));return isNaN(n)?null:n;}
+
+async function processFile(file) {
+  document.getElementById('importLog').innerHTML='';
+  log(`📂 Reading: ${file.name}`);
+  const buf=await file.arrayBuffer();
+  const wb=XLSX.read(buf,{type:'array',cellDates:true});
+  let added=0,dupes=0;
+
+  const fmatch=file.name.match(/(\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})/);
+  let fileDate=null;
+  if(fmatch){
+    const parts=fmatch[1].replace(/\//g,'-').split('-');
+    if(parts.length===3){
+      const y=parts[2].length===2?'20'+parts[2]:parts[2];
+      fileDate=`${y}-${parts[0].padStart(2,'0')}-${parts[1].padStart(2,'0')}`;
+    }
+  }
+
+  for(const shName of wb.SheetNames){
+    const tier=shName.toUpperCase().includes('PRIMARY')?'Primary':'Secondary';
+    const ws=wb.Sheets[shName];
+    const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null});
+
+    for(let i=1;i<rows.length;i++){
+      const row=rows[i];
+      let show,theatre,city,trng,topP,nPerf,gg,gp,ggpct,ptix,ttix,tcap,cpaid,ctot,sub,avgA,rdate;
+
+      if(tier==='Primary'){
+        const d=row[0];
+        rdate=d instanceof Date?d.toISOString().slice(0,10):fileDate;
+        show=row[1]?String(row[1]).trim():''; theatre=row[2]?String(row[2]).trim():'';
+        city=row[3]?String(row[3]).trim():''; trng=row[4]?String(row[4]):null;
+        topP=safeF(row[5]); nPerf=safeF(row[6]); gg=safeF(row[7]); gp=safeF(row[8]);
+        ggpct=safeF(row[9]); ptix=safeF(row[10]); ttix=safeF(row[11]); tcap=safeF(row[12]);
+        cpaid=safeF(row[13]); ctot=safeF(row[14]); sub=row[15]==='X'?1:0; avgA=safeF(row[16]);
+      } else {
+        rdate=fileDate;
+        show=row[0]?String(row[0]).trim():''; theatre=row[1]?String(row[1]).trim():'';
+        city=row[2]?String(row[2]).trim():''; trng=row[3]?String(row[3]):null;
+        topP=safeF(row[4]); nPerf=safeF(row[5]); gg=safeF(row[6]); gp=safeF(row[7]);
+        ggpct=safeF(row[8]); ptix=safeF(row[9]); ttix=safeF(row[10]); tcap=safeF(row[11]);
+        cpaid=safeF(row[12]); ctot=safeF(row[13]); sub=row[14]==='X'?1:0; avgA=safeF(row[15]);
+      }
+
+      if(!show||['nan','show',''].includes(show.toLowerCase())) continue;
+      if(['layoff','nan',''].includes((city||'').toLowerCase())) continue;
+      if(show.toLowerCase().includes('for engagements')) continue;
+
+      const isDupe=ALL_DATA.some(d=>d.report_date===rdate&&d.show===show&&d.city===city&&d.tier===tier);
+      if(isDupe){dupes++;continue;}
+
+      ALL_DATA.push({report_date:rdate,tier,show,theatre:theatre||'',city:city||'',
+        ticket_range:trng&&trng!=='null'?trng:null,top_paid_price:topP,num_performances:nPerf,
+        gross_gross:gg,gross_potential:gp,gg_pct_gp:ggpct,paid_tickets:ptix,total_tickets:ttix,
+        total_capacity:tcap,pct_capacity_paid:cpaid,pct_capacity_total:ctot,on_subscription:sub,avg_paid_admission:avgA});
+      added++;
+    }
+  }
+
+  await saveData(ALL_DATA);
+  log(`✓ Added ${added} records`, '#0A6B5E');
+  if(dupes>0) log(`↷ Skipped ${dupes} duplicates`, '#B8620A');
+  log(`◎ Total records: ${ALL_DATA.length}`);
+
+  populateWeekDropdown(); populateShowList();
+  document.getElementById('showSearch').value = '';
+  filterShowList(); updateDataStatus(); applyFilters();
+}
+*/
+
+async function clearAllData() {
+  if(!confirm('Reset to the original 3 weeks of seed data?')) return;
+  ALL_DATA=[...SEED];
+  await saveData(ALL_DATA);
+  populateWeekDropdown(); populateShowList(); updateDataStatus(); applyFilters();
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+initData();
+</script>
+</body>
+</html>
